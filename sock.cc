@@ -39,6 +39,7 @@ Sock::Sock(LogFile *_log, const char *interface, uint16_t port)
 
 	this->log = _log;
 	listen_multi = 0;
+	multi_sockfd = -1;
 	sockfds = NULL;
 	ifnum = 0;
 	memset(&default_addr, 0, sizeof(default_addr));
@@ -109,7 +110,7 @@ Sock::GetIfList()
 		throw new SysException(errno, "Sock::Sock:socket()");
 
 	lastlen=0;
-	len=100;
+	len=1024;
 
 	while(1)
 	{
@@ -181,13 +182,9 @@ Sock::GetIfList()
 
 	// go through the list
 	ifptr = ifap;
-	while(1)
-	{
-		if(NULL == ifptr)
-			break;
-
-		if(AF_INET != ifptr->ifa_addr->sa_family)
-			goto get_next_addr;
+	for(ifptr = ifap; ifptr; ifptr = ifptr->ifa_next) {
+		if(!(ifptr->ifa_addr) || AF_INET != ifptr->ifa_addr->sa_family)
+			continue;
 
 		ptr = new iflist_t;
 		ptr->next = NULL;
@@ -207,9 +204,6 @@ Sock::GetIfList()
 		memcpy(&tmp_addr, ifptr->ifa_addr, sizeof(tmp_addr));
 		memcpy(&(ptr->if_addr), &(tmp_addr.sin_addr), sizeof(ptr->if_addr));
 		ptr->next = NULL;
-
-		get_next_addr:
-		ifptr = ifptr->ifa_next;
 	}
 	
 	// free the interface list
@@ -542,16 +536,14 @@ Sock::Read(unsigned char *buf, int maxlen, struct sockaddr_in *client_addr,
 		// where did it come from?
 		if(NULL != sockfds)
 			for(pos = 0; pos < ifnum; pos++)
-				if(FD_ISSET(sockfds[pos], &fdset))
-				{
+				if(FD_ISSET(sockfds[pos], &fdset)) {
 					livefd = sockfds[pos];
 					from = &(bind_addrs[pos]);
 					break;
 				}
 
 		// was the multicast fd set
-		if(FD_ISSET(multi_sockfd, &fdset))
-		{
+		if(listen_multi && FD_ISSET(multi_sockfd, &fdset)) {
 			from  = &default_addr;
 			livefd = multi_sockfd;
 		}

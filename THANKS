@@ -1,11 +1,18 @@
 Thanks to some of the contributors:
 
-Erwan Velu <erwan@mandrakesoft.com>
+Anders Nordby <anders at FreeBSD.org>
+ - gcc 3.3 patches.
+
+Erwan Velu <erwan at mandrakesoft.com>
  - gcc 3.3 patches.
  - Itanium 2 support.
 
-Anders Nordby <anders@FreeBSD.org>
- - gcc 3.3 patches.
+Matt Brown <matt at mattb.net.nz>
+ - interface buffer increase
+ - fix for multicast segfault
+
+Pavel Roskin <proski at gnu.org>
+ - another fix for the multicast segfault.
 
 Sorry if I have left your name out of here... Only just started this.
 

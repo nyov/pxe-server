@@ -1,20 +1,25 @@
-Mar 26 2003 Tim Hurman (kano@kano.org.uk)
+April 14 2004 Tim Hurman <kano at kano.org.uk>
+Increase the interface buffer to hold more than three interfaces
+Fixed a segfault in when multicast was disabled
+Fixed null pointer dereference when looking at interfaces with no IP address
+
+Mar 26 2003 Tim Hurman <kano at kano.org.uk>
 Made the source ansi compliant and fixed namespace usage.
 
-Aug 30 2002 Tim Hurman (kano@kano.org.uk)
+Aug 30 2002 Tim Hurman <kano at kano.org.uk>
 pxe 1.3 released.
 Made debuging a command line switch.
 Converted code to use namespaces.
 
-Oct 26 2000 Tim Hurman (kano@kano.org.uk)
+Oct 26 2000 Tim Hurman <kano at kano.org.uk>
 pxe 1.2 released.
 OpenBSD support fixed. Still a small problem due to OpenBSD's interface
 arrangement. Virtual interfaces have the same name as the main interface.
 configure script made, new install instructions.
 
-Oct 25 2000 - Tim Hurman (kano@kano.org.uk)
+Oct 25 2000 - Tim Hurman <kano at kano.org.uk>
 pxe 1.1 released.
 OpenBSD support added
 
-Oct 24 2000 - Tim Hurman (kano@kano.org.uk)
+Oct 24 2000 - Tim Hurman <kano at kano.org.uk>
 pxe 1.0 released.
