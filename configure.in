@@ -3,6 +3,7 @@ AC_INIT(pxe.cc)
 AC_CONFIG_HEADER(autoconf.h)
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_CXX
 
 dnl Checks for programs.
 
@@ -21,19 +22,6 @@ AC_ARG_ENABLE(setuid,
 		SETUID="\"nobody\""
 		AC_ARG_WITH(setuid, [  --with-setuid=user      name of the user to setuid to], [ SETUID="\"${withval}\"" ])
 		AC_DEFINE_UNQUOTED(SETUID, $SETUID)
-	]
-)
-
-dnl debug
-AC_MSG_CHECKING(if the daemon should run in debug mode)
-AC_ARG_ENABLE(debug,
-	[  --enable-debug          enable debug mode],
-	[
-		AC_MSG_RESULT(yes.)
-		AC_DEFINE(DEBUG)
-	],
-	[
-		AC_MSG_RESULT(no.)
 	]
 )
 

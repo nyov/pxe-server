@@ -1,5 +1,5 @@
-CC		=	g++
-CFLAGS		=	-g -ggdb -Wall
+CXX		=	@CXX@
+CXXFLAGS	=	@CXXFLAGS@
 LDFLAGS		=	@LDFLAGS@ @LIBS@
 
 EXECS		=	pxe
@@ -25,10 +25,10 @@ distclean:	clean
 	/bin/rm -f config.cache autoconf.h config.log Makefile config.status
 
 pxe:		$(OBJS)
-	$(CC) $(OBJS) -o pxe $(LDFLAGS)
+	$(CXX) $(OBJS) -o pxe $(LDFLAGS)
 
 .cc.o:
-	$(CC) $(CFLAGS) -c $*.cc
+	$(CXX) $(CXXFLAGS) -c $*.cc
 
 install:	all
 	$(CP) pxe /usr/sbin/

@@ -26,9 +26,9 @@
 #define _OPTIONS_H
 
 #include <sys/types.h>
-#include <stdio.h>
-#include <iostream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
+
 #include <errno.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -55,7 +55,7 @@ typedef struct _services services_t;
 struct _CSA
 {
 	uint16_t arch_id;
-	char *arch_name;
+	const char *arch_name;
 };
 typedef struct _CSA CSA_t;
 

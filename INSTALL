@@ -1,78 +1,115 @@
 PXE daemon install
 ==================
 
-1) If you have a bootp/dhcp daemon installed and running, skip to step 2. If you have not, download the boot daemon from  a sunsite mirror, it is under:
+1) If you have a bootp/dhcp daemon installed and running, skip to step 2. If
+   you have not, download the boot daemon from  a sunsite mirror, it is under:
 /pub/Linux/system/network/boot.net/bootpd-2.4.tar.gz
 eg:
 ftp://src.doc.ic.ac.uk//Mirrors/sunsite.unc.edu/pub/Linux/system/network/boot.net/bootpd-2.4.tar.gz
 
 Follow the install instructions in the bootp package.
 
-2) If you have downloaded Intel/Redhat's PXE packages, or have Redhat (I pity you :) installed skip to step 3. Otherwise download the package from Redhat or any mirror, it should be under:
-ftp://ftp.redhat.com/pub/current/SRPMS/i386/SRPMS/pxe-0.1-20.src.rpm
+2) Download and install PXELINUX from here: http://syslinux.zytor.com/pxe.php
+   My setup for this looks something like this:
+   in /tftpboot/X86PC/linux I have the PXELINUX bootstrap (linux.0)
+   and the kernel I am going to boot from (linux.1)
+   Make a directory here called pxelinux.cfg, inside are a series of files
+   which are named after the hex IP addresses of the machines. ie:
+   /tftpboot/X86PC/linux/pxelinux.cfg/C0A8C8F1
+   which contains:
+label linux
+  kernel bzImage
+  append ip=auto
 
-Extract this package and copy the linux.0 boot image somewhere else. This also contains the linux.0 source if you wish to recompile it. The linux.0 should reside in /tftpboot/X86PC/UNDI/redhat-linux/linux.0 - or something like that.
+  You may also need to update your tftp daemon for this as PXELINUX requires
+  an options not present in many versions eg the Solaris tftpd. Details of
+  this are on the PXELINUX page.
 
-3) Uninstall the Intel/Redhat PXE package (unless you have good reason not to, and know what you are doing), this will avoid confusion later.
-
-4) Run the configure script in this directory.
-There are several option that can be used in this:
+3) Run the configure script in this directory.
+   There are several option that can be used in this:
 --disable-setuid => Disable the daemon from setuiding to a low privilaged user.
 --with-setuid=user => Set the username to setuid to.
 --with-config=file => Set the location of the config file.
 --with-log=file => Set the location of the log file.
---enable-debug => Set debugging mode. The daemon will not fork into the backgroud, and will print the contents of all packets received and sent.
+--enable-debug => Set debugging mode. The daemon will not fork into the
+                  backgroud, and will print the contents of all packets
+                  received and sent.
 
 
-5) Check config.h to make sure of things, most things should be ok, however you may wish to change the location of the log file and/or the configuration file.
+4) Check config.h to make sure of things, most things should be ok,
+   however you may wish to change the location of the log file and/or the
+   configuration file.
 
-6) Type 'make' in this directory. If this fails, please send me an email and I will try and fix it, however it is most likely to be a header clash or something.
+5) Type 'make' in this directory. If this fails, please send me an email and
+   I will try and fix it, however it is most likely to be a header clash or
+   something.
 
-7) Type 'make install', this will install the pxe daemon and it's config file.
+6) Type 'make install', this will install the pxe daemon and it's config file.
 
-8) Edit /etc/pxe.conf and set up the appropriate entries.
-set the interface line to be the interface on the machine to bind to. If you enter an invalid interface, the daemon will bind to all available interfaces.
+7) Edit /etc/pxe.conf and set up the appropriate entries.
+   set the interface line to be the interface on the machine to bind to. If
+   you enter an invalid interface, the daemon will bind to all available
+   interfaces.
 
-It is mandatory to set the default_address address to the default interface of the machine. This is because the PXE protocol is a bit dumb, it sends multicast packets to the bootserver, then uses the server address in the bootp server field for the tftp transfer procedure. 3Com cards are particularly prone to this stupidity.
+It is mandatory to set the default_address address to the default interface
+of the machine. This is because the PXE protocol is a bit dumb, it sends
+multicast packets to the bootserver, then uses the server address in the
+bootp server field for the tftp transfer procedure. 3Com cards are
+particularly prone to this stupidity.
 
-I have not fully tested broadcast capability as yet, there may be some problems with it, however PXE prefers multicast over broadcast, and that has been tested.
+I have not fully tested broadcast capability as yet, there may be some
+problems with it, however PXE prefers multicast over broadcast, and that
+has been tested.
 
-Most of the other directives are fairly self-explanatory, and you should not need to change them. The menus however do need to be set up.
+Most of the other directives are fairly self-explanatory, and you should not
+need to change them. The menus however do need to be set up.
 
-As the config file stands, the first service is a local boot, and the second is a network boot/remote install. The format of the service line is:
+As the config file stands, the first service is a local boot, and the second
+is a network boot/remote install. The format of the service line is:
 service=<CSA>,<min layer>,<max layer>,<basename>,<menu entry>
 
-The CSA is one of several Client System Architectures, most PXE platforms are X86, so this should be left as 'X86PC' however other platforms are supported by inserting the appropriate CSA.
+The CSA is one of several Client System Architectures, most PXE platforms are
+X86, so this should be left as 'X86PC' however other platforms are supported
+by inserting the appropriate CSA.
 
-The min and max layers are the starting and finishing layers in the boot protocol, most commonly these are:
+The min and max layers are the starting and finishing layers in the boot
+protocol, most commonly these are:
 Layer 0: The bootstrap code.
 Layer 1: The kernel.
-Layer 2: The initial RAM disk.
 
-To use all three of these layers, the min should be set to 0 and the max to 2.
+To use a ramdisk, please refer to the PXELINUX config.
 
-The basename defines how the filename is built, see below for an example. The Menu entry is the string that should be printed on screen when a menu is requested.
+The basename defines how the filename is built, see below for an example.
+The Menu entry is the string that should be printed on screen when a menu
+is requested.
 
-There is one special case for all architectures, when the basename is "local" the layers will be ignored and a local boot performed.
+There is one special case for all architectures, when the basename is
+"local" the layers will be ignored and a local boot performed.
 
 E.G.:
-service=X86PC,0,2,linux,Linux install
+service=X86PC,0,1,linux,Linux install
 
-This defines a service for an X86 PC, starting at layer 0 and ending at layer 2. The basename (filenames below) builds the filename, and "Linux Install" will be displayed on the boot menu.
+This defines a service for an X86 PC, starting at layer 0 and ending at
+layer 1. The basename (filenames below) builds the filename, and
+"Linux Install" will be displayed on the boot menu.
 
 Files requested:
 /tftpboot/X86PC/linux/linux.0
 /tftpboot/X86PC/linux/linux.1
-/tftpboot/X86PC/linux/linux.2
 
-When more than one service is configured, the menu order is implied by the service description order. If no key is pressed within the prompt_timeout time, the first item from the services list will be selected.
+When more than one service is configured, the menu order is implied by the
+service description order. If no key is pressed within the prompt_timeout
+time, the first item from the services list will be selected.
 
+8) Before you are ready to go, make sure you have the following lines in
+your inetd.conf file (or equivalent):
 
-9) Before you are ready to go, make sure you have the following lines in your inetd.conf file (or equivalent):
-
-in /etc/bootptab, make sure every system you intend to boot via PXE has the line
+in /etc/bootptab, make sure every system you intend to boot via PXE has
+the line
 :T60="PXEClient":\
-in it (This is case sensitive). Otherwise the PXE ROM on the network card will not use the PXE protocol. Also make sure the bootptab has a correctly set tftp base directory and has no boot filename.
+in it (This is case sensitive). Otherwise the PXE ROM on the network card
+will not use the PXE protocol. Also make sure the bootptab has a correctly
+set tftp base directory and has no boot filename.
 
 #########
 #tftpd
@@ -81,12 +118,16 @@ tftp    dgram   udp     wait    root    /usr/sbin/in.tftpd      in.tftpd -s /tft
 bootps  dgram   udp     wait    root    /usr/local/sbin/bootpd  bootpd  -i -c /tftpboot /etc/bootptab
 #########
 
-If you change your inetd.conf file, make sure to send inetd a HUP signal. If you do not understand how to so this, please read the appropriate man pages/One of the Linux HOWTOs.
+If you change your inetd.conf file, make sure to send inetd a HUP signal.
+If you do not understand how to so this, please read the appropriate man
+pages/One of the Linux HOWTOs.
 
 And /etc/services:
 pxe		4011/udp			# pxe
 
-Also make sure you have a route specified for multicast packets, or a default route. Solaris automatically defines a route for multicast packets however you may need to change the binding interface.
+Also make sure you have a route specified for multicast packets, or a default
+route. Solaris automatically defines a route for multicast packets however
+you may need to change the binding interface.
 
 to enable a default route, as root type
 route add default <interface>
@@ -95,16 +136,14 @@ where <interface> is the name of your interface, eg eth0, le0, hme0, ...
 on some versions of linux you can type to route multicast packets
 route add 224.0.0.0 netmask 240.0.0.0 dev <interface>
 
-10) I suggest you make a minimalist kernel and ramdisk if needed, as the PXE protocol has a maximum limit on tftp packets it can transfer. I am currently working on a minimalist distribution based upon Slackware. This can fit onto a 16M compact flash card and is designed to be very secure, essentially based on read only file systems etc. The final goal being fast install web-servers/encoders etc.
+9) as root type "pxe" (otherwise the daemon will not set UID to another user.
 
-If you do not understand how to do this, Read the Kernel-HOWTO, available under most distributions of linuxdoc.org.
-
-11) as root type "pxe" (otherwise the daemon will not set UID to another user.
-
-12) go play.
+10) go play.
 
 
-If you have problems with this daemon, please make sure it is repeatable, and send any core dumps/packet dumps to me. If you compiled the daemon without debugging, please don't send the core dumps.
+If you have problems with this daemon, please make sure it is repeatable,
+and send any core dumps/packet dumps to me. If you compiled the daemon
+without debugging, please don't send the core dumps.
 
-Tim Hurman. Oct 2000
+Tim Hurman. Nov 2002
 kano@kano.org.uk

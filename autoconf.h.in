@@ -57,9 +57,6 @@
 /* location of the pxe daemon log file */
 #define PXELOGFILE "/tmp/pxe.log"
 
-/* should the daemon run in debug mode */
-#undef DEBUG
-
 /******************************************************************************/
 /* should not need to change from here onwards */
 

@@ -32,12 +32,12 @@ typedef unsigned int socklen_t;
 /******************************************************************************
  * Constructor                                                                *
  ******************************************************************************/
-Sock::Sock(LogFile *log, const char *interface, uint16_t port)
+Sock::Sock(LogFile *_log, const char *interface, uint16_t port)
 {
 	iflist_t *start, *ptr, *prev, distinct;
 	int listlen = 0;
 
-	this->log = log;
+	this->log = _log;
 	listen_multi = 0;
 	sockfds = NULL;
 	ifnum = 0;
@@ -64,9 +64,7 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 	// if available, only bind to that
 	if (ptr != NULL)
 	{
-#ifdef DEBUG
 		cout << "Only binding to interface " << ptr->if_name << "\n";
-#endif
 		distinct.if_name = ptr->if_name;
 		memcpy(&(distinct.if_addr), &(ptr->if_addr), sizeof(distinct.if_addr));
 		default_addr.sin_addr.s_addr = distinct.if_addr.s_addr;
@@ -76,9 +74,7 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 	else
 	// else all interfaces
 	{
-#ifdef DEBUG
 		cout << "Binding to all interfaces\n";
-#endif
 		default_addr.sin_addr.s_addr = INADDR_BROADCAST;
 		Open(start, listlen, port);
 	}
@@ -143,9 +139,7 @@ Sock::GetIfList()
 	{
 		ptr->if_name = new char[strlen(ifc.ifc_req[pos].ifr_name)+1];
 		strcpy(ptr->if_name, ifc.ifc_req[pos].ifr_name);
-#ifdef DEBUG
 		cout << "Found interface " << ifc.ifc_req[pos].ifr_name << "\n";
-#endif // DEBUG
 
 		// tidy this up, too many ops
 		memcpy(&tmp_addr, &(ifc.ifc_req[pos].ifr_addr), sizeof(tmp_addr));
@@ -207,9 +201,7 @@ Sock::GetIfList()
 
 		ptr->if_name = new char[strlen(ifptr->ifa_name)+1];
 		strcpy(ptr->if_name, ifptr->ifa_name);
-#ifdef DEBUG
 		cout << "Found interface " << ifptr->ifa_name << "\n";
-#endif // DEBUG
 
 		// tidy this up, too many ops
 		memcpy(&tmp_addr, ifptr->ifa_addr, sizeof(tmp_addr));
@@ -288,9 +280,7 @@ Sock::Open(iflist_t *local_addrs, int listlen, const uint16_t port)
 		bind_addrs[pos].sin_port = listenport;
 		memcpy(&(bind_addrs[pos].sin_addr), &(lptr->if_addr),
 			sizeof(bind_addrs[pos].sin_addr));
-#ifdef DEBUG
 		cout << "Binding to: " << inet_ntoa(bind_addrs[pos].sin_addr) << "\n";
-#endif
 
 		/* create a socket */
 		sockfds[pos] = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);

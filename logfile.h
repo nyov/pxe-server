@@ -25,9 +25,9 @@
 #define _LOGFILE_H
 
 #include <sys/types.h>
-#include <stdio.h>
-#include <stream.h>
-#include <fstream.h>
+#include <iostream>
+#include <fstream>
+
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -57,7 +57,7 @@
 class LogFile
 {
 	private:
-		fstream *logfile;
+		std::fstream *logfile;
 
 	public:
 		LogFile();

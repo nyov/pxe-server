@@ -24,7 +24,7 @@
 #include "packetstore.h"
 
 /* some global variables */
-char *DHCP_types[DHCP_MAX_TYPES] = 
+const char *DHCP_types[DHCP_MAX_TYPES] = 
 {
 	{"INVALID"}, {"DHCPDISCOVER"}, {"DHCPOFFER"}, {"DHCPREQUEST"},
 	{"DHCPDECLINE"}, {"DHCPACK"}, {"DHCPNACK"}, {"DHCPRELEASE"},
@@ -34,9 +34,9 @@ char *DHCP_types[DHCP_MAX_TYPES] =
 /******************************************************************************
  * PacketStore - null packet constructor                                      *
  ******************************************************************************/
-PacketStore::PacketStore(LogFile *logger)
+PacketStore::PacketStore(LogFile *_logger)
 {
-	this->logger = logger;
+	this->logger = _logger;
 	head = head43 = NULL;
 	Initalise();
 }
@@ -45,11 +45,11 @@ PacketStore::PacketStore(LogFile *logger)
 /******************************************************************************
  * PacketStore - full packet analyse                                          *
  ******************************************************************************/
-PacketStore::PacketStore(LogFile *logger, struct sockaddr_in *address,
+PacketStore::PacketStore(LogFile *_logger, struct sockaddr_in *_address,
 	uint8_t *bootp_pkt, int bootp_pkt_len)
 {
-	this->logger = logger;
-	memcpy(&(this->address), address, sizeof(this->address));
+	this->logger = _logger;
+	memcpy(&(this->address), _address, sizeof(this->address));
 	ReadPacket(bootp_pkt, bootp_pkt_len);
 }
 
@@ -213,8 +213,8 @@ PacketStore::ReadPacket(uint8_t *bootp_pkt, int bootp_pkt_len)
 /******************************************************************************
  * print the packet to stdout                                                 *
  ******************************************************************************/
-ostream&
-operator<< (ostream& os, PacketStore &pkt)
+std::ostream&
+operator<< (std::ostream& os, PacketStore &pkt)
 {
 	int i;
 	option *optptr;
@@ -224,7 +224,8 @@ operator<< (ostream& os, PacketStore &pkt)
 	os << "Hardware type          : " << (int)pkt.htype << "\n";
 	os << "Hardware Length        : " << (int)pkt.hlen << "\n";
 	os << "Hops                   : " << (int)pkt.hops << "\n";
-	os << "Transaction ID         : 0x" << hex(ntohl(pkt.xid)) << "\n";
+	os << "Transaction ID         : 0x" << std::hex << ntohl(pkt.xid) <<
+	  std::dec <<"\n";
 	os << "Seconds                : " << ntohs(pkt.secs) << "\n";
 	os << "Client IP (From Client): " << inet_ntoa(pkt.ciaddr) << "\n";
 	os << "Client IP (From Server): " << inet_ntoa(pkt.yiaddr) << "\n";
@@ -234,13 +235,14 @@ operator<< (ostream& os, PacketStore &pkt)
 	
 	// client hardware addr
 	for(i=0; i<pkt.hlen; i++)
-		os << hex((int)pkt.chaddr[i]) << ".";
+		os << std::hex << (int)pkt.chaddr[i] << std::dec << ".";
 	os << "\n";
 
 	// string info
 	os << "Server name            : " << pkt.sname << "\n";
 	os << "Boot filename          : " << pkt.file << "\n";
-	os << "Magic cookie           : 0x" << hex(ntohl(pkt.magic_cookie)) << "\n";
+	os << "Magic cookie           : 0x" << std::hex <<
+	  ntohl(pkt.magic_cookie) << std::dec  << "\n";
 
 	if(pkt.head == NULL)
 		return os;
@@ -256,11 +258,11 @@ operator<< (ostream& os, PacketStore &pkt)
 		for(i=0; i<optptr->len; i++)
 			if((optptr->data[i] >0x20) && (optptr->data[i] < 0x7f))
 				os << "[" << (int)optptr->data[i]
-				   << "," << hex((int)optptr->data[i])
+				   << "," << std::hex << (int)optptr->data[i] << std::dec
 				   << "," << (char)optptr->data[i] << "] ";
 			else
 				os << "[" << (int)optptr->data[i]
-				   << "," << hex((int)optptr->data[i])
+				   << "," << std::hex << (int)optptr->data[i] << std::dec
 				   << ", ] ";
 
 		os << "\n";
@@ -279,11 +281,11 @@ operator<< (ostream& os, PacketStore &pkt)
 		for(i=0; i<optptr->len; i++)
 			if((optptr->data[i] >0x20) && (optptr->data[i] < 0x7f))
 				os << "[" << (int)optptr->data[i]
-				   << "," << hex((int)optptr->data[i])
+				   << "," << std::hex << (int)optptr->data[i] << std::dec 
 				   << "," << (char)optptr->data[i] << "] ";
 			else
 				os << "[" << (int)optptr->data[i]
-				   << "," << hex((int)optptr->data[i])
+				   << "," << std::hex << (int)optptr->data[i] << std::dec
 				   << ", ] ";
 
 		os << "\n";
@@ -370,7 +372,7 @@ PacketStore::ReadOptions43(uint8_t *bootp_pkt, int bootp_pkt_len)
 		// lots of sub options
 		if(bootp_pkt[pos] == 43)
 		{
-			cerr << "Option 43 detected\n";
+			std::cerr << "Option 43 detected\n";
 			break;
 		}
 
@@ -609,9 +611,9 @@ PacketStore::htoil(uint32_t value)
  * SetAddress - set the address fiel of the packet (from/to)                  *
  ******************************************************************************/
 void
-PacketStore::SetAddress(const struct sockaddr_in *address)
+PacketStore::SetAddress(const struct sockaddr_in *_address)
 {
-	memcpy(&address, address, sizeof(address));
+	memcpy(&address, _address, sizeof(address));
 }
 
 

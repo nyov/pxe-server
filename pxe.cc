@@ -22,6 +22,9 @@
  ******************************************************************************/
 
 #include <sys/types.h>
+#include <iostream>
+#include <fstream>
+
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
@@ -55,8 +58,8 @@ int watchchld = 1;
  ******************************************************************************/
 void Usage(char *progname)
 {
-	cerr << "Usage: " << progname << " [-c <configfile>]\n";
-	cerr << "Tim Hurman (kano@kano.org.uk) " << __DATE__ << "\n";
+	std::cerr << "Usage: " << progname << " [-c <configfile>] [-d]\n";
+	std::cerr << "Tim Hurman (kano@kano.org.uk) " << __DATE__ << "\n";
 	exit(1);
 }
 
@@ -85,7 +88,7 @@ void HandleSigChld(int signo)
 /******************************************************************************
  * StartPxeService - service incoming pxe requests                            *
  ******************************************************************************/
-int StartPxeService(int argc, char **argv)
+int StartPxeService(const char *configfile)
 {
 	LogFile logger;
 	Options *opts = NULL;
@@ -94,46 +97,28 @@ int StartPxeService(int argc, char **argv)
 	PacketStore request(&logger);
 	PacketStore reply(&logger);
 	PacketStore test(&logger);
-	int errflg = 0;
 	int retval = 0;
-	char *configfile=PXECONFIGFILE;
 	extern char *optarg;
-	int c, recvlen;
+	int recvlen;
 	char *buf;
 	struct sockaddr_in server_addr, client_addr;
 	bootp_packet_t *pkt;
 
-	// get the command line opts
-	while ((c = getopt(argc, argv, "c:")) != EOF)
-		switch(c)
-		{
-		case 'c':
-			configfile = optarg;
-			break;
-		default:
-			errflg++;
-		}
-	
-	// errors?
-	if(errflg)
-		Usage(argv[0]);
-
 	// register some signal handlers
 	sig.Set(SIGINT, HandleSig);
 	sig.Set(SIGTERM, HandleSig);
-	sig.Set(SIGHUP, SIG_IGN);
+	sig.Set(SIGHUP, (void(*)(int))SIG_IGN);
 
 	// assign memory
 	buf = new char[BUFFER_SZ];
 
 	// read the config file
-#ifdef DEBUG
-	cout << "Opening " << configfile << "\n";
-#endif // DEBUG
+	std::cout << "Opening " << configfile << "\n";
+
 	try {
 		opts = new Options(&logger, configfile);
 	} catch (SysException *e) {
-		cerr << "An error occurred, please check the logfile\n";
+		std::cerr << "An error occurred, please check the logfile\n";
 		if(e->HaveMessage())
 			logger.Event(LEVEL_FATAL, e->GetWhere(), 1, e->GetMessage());
 		else
@@ -155,7 +140,7 @@ int StartPxeService(int argc, char **argv)
 			connection->JoinMulticast(opts->GetMulticast());
 
 	} catch (SysException *e) {
-		cerr << "An error occurred, please check the logfile\n";
+		std::cerr << "An error occurred, please check the logfile\n";
 		if(e->HaveMessage())
 			logger.Event(LEVEL_FATAL, e->GetWhere(), 1, e->GetMessage());
 		else
@@ -183,17 +168,13 @@ int StartPxeService(int argc, char **argv)
 			// parse the request
 			request.ReadPacket((unsigned char*)buf, recvlen);
 			request.SetAddress(&client_addr);
-#ifdef DEBUG
-			cout << "\n---Request---\n" << request << "\n";
-#endif // DEBUG
+			std::cout << "\n---Request---\n" << request << "\n";
 
 			if(reply.MakeReply(request, opts, &server_addr) == -1)
 				goto service_requests_next;
 
 			// print the packet
-#ifdef DEBUG
-			cout  << "\n---Reply---\n\n" << reply << "\n";
-#endif // DEBUG
+			std::cout  << "\n---Reply---\n\n" << reply << "\n";
 			pkt = reply.PackPacket();
 
 			// send the packet back to the client
@@ -204,9 +185,9 @@ int StartPxeService(int argc, char **argv)
 			delete pkt;
 
 			service_requests_next:
-			c=c;
+			recvlen=recvlen;
 		} catch (SysException *e) {
-			cerr << "An error occurred, please check the logfile\n";
+			std::cerr << "An error occurred, please check the logfile\n";
 			if(e->HaveMessage())
 				logger.Event(LEVEL_FATAL, e->GetWhere(), 1, e->GetMessage());
 			else
@@ -234,9 +215,50 @@ int StartPxeService(int argc, char **argv)
  ******************************************************************************/
 int main(int argc, char **argv)
 {
-	// register the signal
 	int chk;
 	char pidnum[8];
+	int _debug, c, errflg;
+	const char *configfile=PXECONFIGFILE;
+	std::fstream debug;
+
+	errflg = _debug = 0;
+	// get the command line opts
+	while ((c = getopt(argc, argv, "dc:")) != EOF)
+		switch(c)
+		{
+		case 'c':
+			configfile = optarg;
+			break;
+		case 'd':
+			_debug = 1;
+			break;
+		default:
+			errflg++;
+		}
+
+	// errors?
+	if(errflg)
+		Usage(argv[0]);
+
+	// check the config file exists
+	debug.open(configfile, std::ios::in);
+	if (!debug.is_open()) {
+		std::cerr << "Unable to open the config file\n";
+		exit (1);
+	}
+	debug.close();
+
+	// redirect the file descriptors
+	if (0 == _debug) {
+		debug.open("/dev/null", std::ios::out);
+		std::cout.rdbuf(debug.rdbuf());
+		std::cerr.rdbuf(debug.rdbuf());
+		debug.close();
+		debug.open("/dev/zero", std::ios::in);
+		std::cin.rdbuf(debug.rdbuf());
+		debug.close();
+	}
+
 
 	// set the UID/GID to a low user
 #ifndef NO_SUID
@@ -244,15 +266,15 @@ int main(int argc, char **argv)
 	pw = getpwnam(SETUID);
 
 	if(NULL == pw)
-		cout << "Unable to find passwd entry for " << SETUID
+		std::cout << "Unable to find passwd entry for " << SETUID
 		     << ", continuing with user id " << getuid() << "\n";
 	else
 	{
 		if((-1 == setgid(pw->pw_gid)) || (-1 == setegid(pw->pw_gid)))
-			cout << "Unable to change group id, continuing with group id "
+			std::cout << "Unable to change group id, continuing with group id "
 			     << getgid() << "\n";
 		if((-1 == setuid(pw->pw_uid)) || (-1 == seteuid(pw->pw_uid)))
-			cout << "Unable to change user id, continuing with user id "
+			std::cout << "Unable to change user id, continuing with user id "
 			     << getuid() << "\n";
 	}
 #endif
@@ -261,71 +283,54 @@ int main(int argc, char **argv)
 	chk = open(LOCKFILE, O_WRONLY|O_CREAT|O_EXCL, 0644);
 	if(-1 == chk)
 	{
-		cerr << "PXE daemon already running\n";
+		std::cerr << "PXE daemon already running\n";
 		return(-1);
 	}
 
-	// if running in debug mode, do not fork into a daemon
-#ifndef DEBUG
-	fstream *cin_new, *cout_new, *cerr_new;
-	cin_new = new fstream("/dev/null", ios::in);
-	cout_new = new fstream("/dev/null", ios::out);
-	cerr_new = new fstream("/dev/null", ios::out);
-	signal(SIGCHLD, SIG_IGN);
+	// if not in debug mode, fork and go
+	if (0 == _debug) {
+		signal(SIGCHLD, SIG_IGN);
 
-	// set up the daemon
-	switch (fork())
-	{
-	case -1:
-		cerr << "Unable to fork child\n";
-		exit(-1);
-	case 0:
-		// become the process group session leader
-		setsid();
-
-		// the second fork
-		switch(fork())
-		{
+		// set up the daemon
+		switch (fork()) {
 		case -1:
-			cerr << "Unable to fork child\n";
+			std::cerr << "Unable to fork child\n";
 			exit(-1);
 		case 0:
-			// change the working dir
-			chdir("/");
+			// become the process group session leader
+			setsid();
 
-			// clear the mask
-			umask(0);
-#endif // DEBUG
-
-			// write out the pid
-			sprintf(pidnum, "%ld", (long)getpid());
-			if(write(chk, pidnum, strlen(pidnum)) != (ssize_t)strlen(pidnum))
-			{
-				cerr << "Unable to write lockfile\n";
+			// the second fork
+			switch(fork()) {
+			case -1:
+				std::cerr << "Unable to fork child\n";
 				exit(-1);
+			case 0:
+				// change the working dir
+				chdir("/");
+
+				// clear the mask
+				umask(0);
+
+				// write out the pid
+				sprintf(pidnum, "%ld", (long)getpid());
+				if(write(chk, pidnum, strlen(pidnum)) !=
+				  (ssize_t)strlen(pidnum)) {
+					std::cerr << "Unable to write lockfile\n";
+					exit(-1);
+				}
+				close(chk);
+
+				StartPxeService(configfile);
+
+				exit(0);
 			}
-			close(chk);
-
-#ifndef DEBUG
-			// reopen all major fds
-			cin.close();
-			cin = *cin_new;
-			cout.flush();
-			cout.close();
-			cout = *cout_new;
-			cerr.flush();
-			cerr.close();
-			cerr = *cerr_new;
-#endif // DEBUG
-
-			StartPxeService(argc, argv);
-
-#ifndef DEBUG
 			exit(0);
 		}
-		exit(0);
+
+	} else { // debug
+		StartPxeService(configfile);
 	}
-#endif // DEBUG
 	
 	return(0);
 }

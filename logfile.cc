@@ -58,10 +58,10 @@ LogFile::Open(const char *filename)
 {
 	/* open the file */
 	umask(077);
-	logfile = new fstream(filename, ios::out|ios::app, 0644);
+	logfile = new std::fstream(filename, std::ios::out|std::ios::app, 0644);
 	if(logfile == NULL)
 	{
-		cerr << "Error: LogFile::Open:open(): " << strerror(errno) << "\n";
+		std::cerr << "Error: LogFile::Open:open(): " << strerror(errno) <<"\n";
 		exit(-1);
 	}
 }
@@ -84,7 +84,8 @@ void
 LogFile::Event(int level, const char *where, int count, ...)
 {
 	time_t currsecs;
-	char *timestr, *error;
+	char *timestr;
+	const char *error;
 	int len;
 	va_list argp;
 	char *p;

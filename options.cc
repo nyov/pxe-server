@@ -41,9 +41,9 @@ CSA_t CSA_types[CSA_MAX_TYPES] =
 /******************************************************************************
  * Options - constructor - read from the default file                         *
  ******************************************************************************/
-Options::Options(LogFile *log)
+Options::Options(LogFile *_log)
 {
-	this->log = log;
+	this->log = _log;
 	ReadFile(PXECONFIGFILE);
 }
 
@@ -51,9 +51,9 @@ Options::Options(LogFile *log)
 /******************************************************************************
  * Options - constructor - read from the specified file                       *
  ******************************************************************************/
-Options::Options(LogFile *log, const char *filename)
+Options::Options(LogFile *_log, const char *filename)
 {
-	this->log = log;
+	this->log = _log;
 	ReadFile(filename);
 }
 
@@ -96,7 +96,7 @@ Options::~Options()
 void
 Options::ReadFile(const char *filename)
 {
-	fstream *fp;
+	std::fstream *fp;
 	int len;
 	char *key,*val;
 	struct in_addr t_addr;
@@ -105,10 +105,10 @@ Options::ReadFile(const char *filename)
 
 	// initalise vars
 	buf = new char[1024];
-	tftpdbase = TFTPD_BASE;
-	domain = DEF_DOMAIN;
+	tftpdbase = (char*)TFTPD_BASE;
+	domain = (char*)DEF_DOMAIN;
 	interface = NULL;
-	prompt = DEF_PROMPT;
+	prompt = (char*)DEF_PROMPT;
 	
 	multicast_address = DEF_MULTI_BOOT;
 	mtftp_address = DEF_MTFTP_ADDR;
@@ -121,7 +121,7 @@ Options::ReadFile(const char *filename)
 	use_multicast = use_broadcast = 1;
 	serv_head = NULL;
 
-	fp = new fstream(filename, ios::in);
+	fp = new std::fstream(filename, std::ios::in);
 	if(fp == NULL)
 		throw new SysException(errno, "Options::ReadFile:fopen()");
 	

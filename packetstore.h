@@ -25,7 +25,7 @@
 #define _PACKETSTORE_H
 
 #include <sys/types.h>
-#include <stream.h>
+#include <iostream>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -50,7 +50,7 @@
 #define MAGIC_COOKIE 0x63825363
 
 #define DHCP_MAX_TYPES 9
-extern char *DHCP_types[DHCP_MAX_TYPES];
+extern const char *DHCP_types[DHCP_MAX_TYPES];
 
 // some more defines
 #define DISABLE_MULTICAST 0x40
@@ -102,7 +102,7 @@ class PacketStore
 		void Initalise(void);
 		void SetAddress(const struct sockaddr_in *);
 
-		friend ostream& operator<< (ostream&, PacketStore&);
+		friend std::ostream& operator<< (std::ostream&, PacketStore&);
 		int ReadPacket(uint8_t *, int);
 		int MakeReply(PacketStore &, Options *, struct sockaddr_in *);
 		bootp_packet_t *PackPacket(void);
@@ -110,7 +110,7 @@ class PacketStore
 
 	private:
 		uint16_t checkCSA(uint16_t);
-		option *GetOption(int major_opt=0, int minor_opt=0);
+		option *GetOption(int, int);
 		int ReadOptions(uint8_t *bootp_pkt, int bootp_pkt_len);
 		int ReadOptions43(uint8_t *bootp_pkt, int bootp_pkt_len);
 		uint16_t htois(uint16_t);
