@@ -301,8 +301,8 @@ PacketStore::ReadOptions(uint8_t *bootp_pkt, int bootp_pkt_len)
 {
 	// everything will always be null here
 	int pos;
-	option *optptr;
-	option *optprev;
+	option *optptr = NULL;
+	option *optprev = NULL;
 
 	for(pos=0; pos < bootp_pkt_len; pos++)
 	{
@@ -356,8 +356,8 @@ PacketStore::ReadOptions43(uint8_t *bootp_pkt, int bootp_pkt_len)
 {
 	// everything will always be null here
 	int pos;
-	option *optptr;
-	option *optprev;
+	option *optptr=NULL;
+	option *optprev=NULL;
 
 	for(pos=0; pos < bootp_pkt_len; pos++)
 	{
@@ -942,6 +942,7 @@ PacketStore::GetCSA(void)
 	int csa2_nok=0;
 
 	// should have received two copies of the csa, compare
+	csa1 = csa2 = 0;
 
 	// the binary packed copy
 	opt = GetOption(93);
@@ -1004,12 +1005,12 @@ PacketStore::checkCSA(uint16_t reqCSA)
 /******************************************************************************
  * MakeReply - pack the packet into a raw data form                           *
  ******************************************************************************/
-bootp_packet *
+bootp_packet_t *
 PacketStore::PackPacket(void)
 {
 	int pktlen, pos, len43;
 	option *optptr;
-	bootp_packet *opt = new bootp_packet;
+	bootp_packet_t *opt = new bootp_packet_t;
 
 	// first go through the packet and see how big it is
 	pktlen = 241; // 255 closing tag

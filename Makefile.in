@@ -1,0 +1,35 @@
+CC		=	g++
+CFLAGS		=	-g -ggdb -Wall
+LDFLAGS		=	@LDFLAGS@ @LIBS@
+
+EXECS		=	pxe
+CP		=	cp
+
+all:	$(EXECS)
+
+pxe.o:	pxe.cc
+sock.o:	sock.cc
+logfile.o:	logfile.cc
+options.o:	options.cc
+sysexception.o:	sysexception.cc
+packetstore.o:	packetstore.cc packetstore.h
+posix_signal.o:	posix_signal.cc
+
+OBJS	=	pxe.o sock.o logfile.o options.o sysexception.o \
+			packetstore.o posix_signal.o
+
+clean:
+	/bin/rm -f $(EXECS) $(OBJS) *.o core a.out .nfs*
+
+distclean:	clean
+	/bin/rm -f config.cache autoconf.h config.log Makefile config.status
+
+pxe:		$(OBJS)
+	$(CC) $(OBJS) -o pxe $(LDFLAGS)
+
+.cc.o:
+	$(CC) $(CFLAGS) -c $*.cc
+
+install:	all
+	$(CP) pxe /usr/sbin/
+	$(CP) pxe.conf /etc/

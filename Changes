@@ -1,4 +1,9 @@
-Oct 24 2000 - Tim Hurman (kano@kano.org.uk)
+Oct 26 2000 Tim Hurman (kano@kano.org.uk)
+pxe 1.2 released.
+OpenBSD support fixed. Still a small problem due to OpenBSD's interface arrangement. Virtual interfaces have the same name as the main interface.
+configure script made, new install instructions.
+
+Oct 25 2000 - Tim Hurman (kano@kano.org.uk)
 pxe 1.1 released.
 OpenBSD support added
 

@@ -36,7 +36,7 @@
 #include <errno.h>
 
 #include "logfile.h"
-#include "config.h"
+#include "autoconf.h"
 
 class Signal
 {

@@ -6,9 +6,9 @@ This is an implementation of the Intel PXE bootstrap protocol. This protocol is 
 The bootp daemon can be found on any sunsite.unc mirror, under
 /pub/Linux/system/network/boot.net/bootpd-2.4.tar.gz
 
-It is also recommended that you obtain the Intel/Redhat PXE package. This is because it contains a bootstrap program that interacts with the PXE ROM on the client, and loads the kernel. I don't have enough x86 hardware knowedge to make on of these. However, <plead> if anyone feels up to the task, feel free to contact me </plead>. There is a PXE ROM API spec to make life a little easier.
+It is also recommended that you obtain the Intel/Red Hat PXE package. This is because it contains a bootstrap program that interacts with the PXE ROM on the client, and loads the kernel. I don't have enough x86 hardware knowedge to make on of these. However, <plead> if anyone feels up to the task, feel free to contact me </plead>. There is a PXE ROM API spec to make life a little easier.
 
-The Intel/Redhat PXE package can be found at
+The Intel/Red Hat PXE package can be found at
 ftp://ftp.redhat.com/pub/current/SRPMS/i386/SRPMS/pxe-0.1-20.src.rpm
 However this will *only* work on X86 Linux machines.
 

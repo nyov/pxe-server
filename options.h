@@ -35,10 +35,10 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include "autoconf.h"
 
 #include "sysexception.h"
 #include "logfile.h"
-#include "config.h"
 
 struct _services
 {
@@ -61,6 +61,16 @@ typedef struct _CSA CSA_t;
 
 #define CSA_MAX_TYPES 7
 extern CSA_t CSA_types[CSA_MAX_TYPES];
+
+struct _option
+{
+	uint8_t major_no;
+	uint8_t minor_no;
+	uint8_t len;
+	uint8_t *data;
+	struct _option *next;
+};
+typedef struct _option option;
 
 
 class Options

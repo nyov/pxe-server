@@ -24,6 +24,10 @@
 #include "sock.h"
 #include <iostream.h>
 
+#ifndef _SOCKLEN_T
+typedef unsigned int socklen_t;
+#endif // _SOCKLEN_T
+
 
 /******************************************************************************
  * Constructor                                                                *
@@ -94,7 +98,7 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 /******************************************************************************
  * GetIfList - get a list of all interfaces in the machine                    *
  ******************************************************************************/
-#ifndef OPENBSD
+#ifndef HAVE_GETIFADDRS
 iflist_t *
 Sock::GetIfList()
 {
@@ -163,8 +167,6 @@ Sock::GetIfList()
 }
 #else
 
-#include <ifaddrs.h>
-
 iflist_t *
 Sock::GetIfList()
 {
@@ -222,7 +224,7 @@ Sock::GetIfList()
 	freeifaddrs(ifap);
 	return(start);
 }
-#endif // OPENBSD
+#endif // HAVE_GETIFADDRS
 
 
 /******************************************************************************
@@ -510,9 +512,9 @@ Sock::Read(unsigned char *buf, int maxlen, struct sockaddr_in *client_addr,
 	int pos;
 	int selret;
 	int maxfdno=0;
-	int livefd;
+	int livefd = 0;
 	fd_set fdset;
-	struct sockaddr_in *from;
+	struct sockaddr_in *from=NULL;
 
 	// get the max fd no
 	if(NULL != sockfds)
@@ -606,8 +608,13 @@ Sock::GetHostname(const struct sockaddr_in *address)
 	   sizeof(address->sin_addr.s_addr), AF_INET);
 	if(h_info == NULL)
 	{
+#ifdef HAVE_HSTRERROR
 		log->Event(LEVEL_INFO, "Sock::GetHostname:gethostbyaddr()",
 			1, hstrerror(h_errno));
+#else
+		log->Event(LEVEL_INFO, "Sock::GetHostname:gethostbyaddr()",
+			1, "Resolver error occourred");
+#endif
 		return(NULL);
 	}
 
@@ -622,7 +629,8 @@ int
 Sock::Send(unsigned char *buf, int maxlen, struct sockaddr_in *client_addr,
 	struct sockaddr_in *server_addr)
 {
-	int livefd, ifno, len;
+	int livefd=0;
+	int ifno, len;
 	int found = 0;
 
 	// firstly, make some routing choices

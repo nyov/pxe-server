@@ -34,7 +34,7 @@
 #include "options.h"
 #include "logfile.h"
 #include "sysexception.h"
-#include "config.h"
+#include "autoconf.h"
 
 #define BOOTREQUEST 1
 #define BOOTREPLY 2
@@ -56,6 +56,15 @@ extern char *DHCP_types[DHCP_MAX_TYPES];
 #define DISABLE_MULTICAST 0x40
 #define DISABLE_BROADCAST 0x80
 
+// structs
+struct bootp_packet
+{
+	int len;
+	uint8_t *data;
+};
+typedef struct bootp_packet bootp_packet_t;
+
+// the main class
 class PacketStore
 {
 	protected:
@@ -96,7 +105,7 @@ class PacketStore
 		friend ostream& operator<< (ostream&, PacketStore&);
 		int ReadPacket(uint8_t *, int);
 		int MakeReply(PacketStore &, Options *, struct sockaddr_in *);
-		bootp_packet *PackPacket(void);
+		bootp_packet_t *PackPacket(void);
 		uint16_t GetCSA();
 
 	private:

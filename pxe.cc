@@ -37,7 +37,7 @@
 #include "options.h"
 #include "sysexception.h"
 #include "posix_signal.h"
-#include "config.h"
+#include "autoconf.h"
 
 int service_requests=1;
 int watchchld = 1;
@@ -101,7 +101,7 @@ int StartPxeService(int argc, char **argv)
 	int c, recvlen;
 	char *buf;
 	struct sockaddr_in server_addr, client_addr;
-	bootp_packet *pkt;
+	bootp_packet_t *pkt;
 
 	// get the command line opts
 	while ((c = getopt(argc, argv, "c:")) != EOF)
@@ -298,11 +298,7 @@ int main(int argc, char **argv)
 #endif // DEBUG
 
 			// write out the pid
-#ifdef SOLARIS
-			sprintf(pidnum, "%ld", getpid());
-#else
-			sprintf(pidnum, "%d", getpid());
-#endif
+			sprintf(pidnum, "%ld", (long)getpid());
 			if(write(chk, pidnum, strlen(pidnum)) != (ssize_t)strlen(pidnum))
 			{
 				cerr << "Unable to write lockfile\n";

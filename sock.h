@@ -41,31 +41,32 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#ifndef OPENBSD
+#include "autoconf.h"
+
+#ifdef HAVE_STROPTS_H
 #include <stropts.h>
-#endif //OPENBSD
+#endif // HAVE_STROPTS_H
 
-#ifdef SOLARIS
+#ifdef HAVE_SYS_SOCKIO_H
 #include <sys/sockio.h>
-#endif // SOLARIS
+#endif // HAVE_SYS_SOCKIO_H
+
+#ifdef HAVE_IFADDRS_H
+#include <ifaddrs.h>
+#endif // HAVE_IFADDRS_H
 
 
-#include "config.h"
 #include "sysexception.h"
 #include "logfile.h"
 
-#ifdef SOLARIS
-#ifndef socklen_t
-#define socklen_t int
-#endif // socklen_t
-#endif // SOLARIS
 
-struct iflist_t
+struct _iflist_t
 {
 	char *if_name;
 	in_addr if_addr;
-	struct iflist_t *next;
+	struct _iflist_t *next;
 };
+typedef struct _iflist_t iflist_t;
 
 class Sock
 {

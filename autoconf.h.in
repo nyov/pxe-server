@@ -18,17 +18,53 @@
  *
  */
 /******************************************************************************
- * config.h - pxe daemon configuration files                                  *
+ * autoconf.h - pxe daemon configuration file                                 *
  ******************************************************************************/
 
-#ifndef _CONFIG_H
-#define _CONFIG_H
+#ifndef _AUTOCONF_H
+#define _AUTOCONF_H
 
+/* define this if you have stdint.h */
+#undef HAVE_STDINT_H
+
+/* define this if you have stropts.h */
+#undef HAVE_STROPTS_H
+
+/* define this if you have sys/sockio.h */
+#undef HAVE_SYS_SOCKIO_H
+
+/* define this if you have ifaddrs.h */
+#undef HAVE_IFADDRS_H
+
+/* define this if you have getifaddrs */
+#undef HAVE_GETIFADDRS
+
+/* define this if you have hstrerror */
+#undef HAVE_HSTRERROR
+
+/* define this if you have inet_aton */
+#undef HAVE_INET_ATON
+
+/* define this if you don't want the daemon to setuid */
+#undef NO_SUID
+
+/* the user to setuid to */
 #define SETUID "nobody"
-#define LOCKFILE "/tmp/pxe.pid"
 
-#define PXELOGFILE "/tmp/pxe.log"
+/* the location of the pxe daemon config file */
 #define PXECONFIGFILE "/etc/pxe.conf"
+
+/* location of the pxe daemon log file */
+#define PXELOGFILE "/tmp/pxe.log"
+
+/* should the daemon run in debug mode */
+#undef DEBUG
+
+/******************************************************************************/
+/* should not need to change from here onwards */
+
+/* the lock file */
+#define LOCKFILE "/tmp/pxe.pid"
 
 #define DEF_MULTI_BOOT 0xe0000102
 #define DEF_ADDR "0.0.0.0"
@@ -51,24 +87,4 @@
 #define DEF_PROMPT "Press F8 to view menu ..."
 #define DEF_PROMPT_TIMEOUT 10
 
-// this is used in lots of places, so it's going here
-struct _option
-{
-	uint8_t major_no;
-	uint8_t minor_no;
-	uint8_t len;
-	uint8_t *data;
-	struct _option *next;
-};
-typedef struct _option option;
-
-// packet store
-struct bootp_packet
-{
-	int len;
-	uint8_t *data;
-};
-typedef struct bootp_packet bootp_packet_t;
-
-
-#endif // _CONFIG_H
+#endif // _AUTOCONF_H

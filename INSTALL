@@ -15,13 +15,16 @@ Extract this package and copy the linux.0 boot image somewhere else. This also c
 
 3) Uninstall the Intel/Redhat PXE package (unless you have good reason not to, and know what you are doing), this will avoid confusion later.
 
-4) Edit the Makefile in this package for you architecture. There are two main platforms I have tested this on, Solaris 7 and Slackware Linux 2.2.16. It should be a case of uncommenting whichever platform is closest to yours. I would test it on IRIX/BSD etc but I don't have access to any boxes.
+4) Run the configure script in this directory.
+There are several option that can be used in this:
+--disable-setuid => Disable the daemon from setuiding to a low privilaged user.
+--with-setuid=user => Set the username to setuid to.
+--with-config=file => Set the location of the config file.
+--with-log=file => Set the location of the log file.
+--enable-debug => Set debugging mode. The daemon will not fork into the backgroud, and will print the contents of all packets received and sent.
 
-In the make file you can add two extra defines:
-DEBUG - non-forking debug mode, this will also print out the contents of every packet received and sent.
-NO_SUID - do not perform a setuid to user nobody. This is a security measure, if it is cracked, them the cracker only has user 'nobody' privileges. The user to set UID to can be changed in the config.h file.
 
-5) Edit config.h to suit your needs, most things should be ok, however you may wish to change the location of the log file and/or the configuration file.
+5) Check config.h to make sure of things, most things should be ok, however you may wish to change the location of the log file and/or the configuration file.
 
 6) Type 'make' in this directory. If this fails, please send me an email and I will try and fix it, however it is most likely to be a header clash or something.
 

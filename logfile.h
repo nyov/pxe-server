@@ -38,11 +38,11 @@
 #include <stdarg.h>
 #include <time.h>
 
-#ifdef LINUX
-#include <stdint.h>
-#endif // LINUX
+#include "autoconf.h"
 
-#include "config.h"
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif // HAVE_STDINT_H
 
 #define LEVEL_INFO_C "Info:"
 #define LEVEL_ERR_C "Error:"
