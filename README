@@ -1,0 +1,44 @@
+PXE daemon readme
+=================
+
+This is an implementation of the Intel PXE bootstrap protocol. This protocol is roughtly speaking based upon the bootp protocol, and currently needs the bootp daemon to work.
+
+The bootp daemon can be found on any sunsite.unc mirror, under
+/pub/Linux/system/network/boot.net/bootpd-2.4.tar.gz
+
+It is also recommended that you obtain the Intel/Redhat PXE package. This is because it contains a bootstrap program that interacts with the PXE ROM on the client, and loads the kernel. I don't have enough x86 hardware knowedge to make on of these. However, <plead> if anyone feels up to the task, feel free to contact me </plead>. There is a PXE ROM API spec to make life a little easier.
+
+The Intel/Redhat PXE package can be found at
+ftp://ftp.redhat.com/pub/current/SRPMS/i386/SRPMS/pxe-0.1-20.src.rpm
+However this will *only* work on X86 Linux machines.
+
+To install the PXE daemon , please follow the directions in the INSTALL file.
+
+
+Licence info
+============
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+
+
+Thanks/Contributors
+===================
+With thanks to BBC Internet Services, for hardware and support, during the development of this software.
+
+
+
+October 24, 2000
+Tim Hurman (kano@kano.org.uk)
