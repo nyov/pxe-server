@@ -26,9 +26,9 @@
 /* some global variables */
 const char *DHCP_types[DHCP_MAX_TYPES] = 
 {
-	{"INVALID"}, {"DHCPDISCOVER"}, {"DHCPOFFER"}, {"DHCPREQUEST"},
-	{"DHCPDECLINE"}, {"DHCPACK"}, {"DHCPNACK"}, {"DHCPRELEASE"},
-	{"DHCPINFORM"}
+	"INVALID", "DHCPDISCOVER", "DHCPOFFER", "DHCPREQUEST",
+	"DHCPDECLINE", "DHCPACK", "DHCPNACK", "DHCPRELEASE",
+	"DHCPINFORM"
 };
 
 /******************************************************************************
