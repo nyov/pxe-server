@@ -30,7 +30,7 @@
 SysException::SysException(const int err, const char *location)
 {
 	local_errno = err;
-	loc = new(char[strlen(location)+1]);
+	loc = new char[strlen(location)+1];
 	strcpy(loc, location);
 	mess = NULL;
 }
@@ -43,9 +43,9 @@ SysException::SysException(const int err, const char *location,
 	const char *message)
 {
 	local_errno = err;
-	loc = new(char[strlen(location)+1]);
+	loc = new char[strlen(location)+1];
 	strcpy(loc, location);
-	mess = new(char[strlen(message)+1]);
+	mess = new char[strlen(message)+1];
 	strcpy(mess, message);
 }
 

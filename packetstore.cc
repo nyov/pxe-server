@@ -911,6 +911,7 @@ PacketStore::GenOpt54(void)
 	opt.data = new uint8_t[opt.len];
 	memcpy(opt.data, &(siaddr.s_addr), opt.len);
 	AddOption(&opt);
+	delete [] opt.data;
 	return(0);
 }
 
@@ -924,9 +925,11 @@ PacketStore::GenOpt60(void)
 	option opt;
 	opt.major_no=60;
 	opt.minor_no=0;
-	opt.data = (uint8_t *)DHCP_T60;
 	opt.len = strlen(DHCP_T60);
+	opt.data = new uint8_t[opt.len];
+	memcpy(opt.data, DHCP_T60, opt.len);
 	AddOption(&opt);
+	delete [] opt.data;
 	return(0);
 }
 
@@ -962,14 +965,11 @@ PacketStore::GetCSA(void)
 	opt = GetOption(60);
 	if(NULL == opt)
 		csa2_nok = 1;
-	else if(32 != opt->len)
-	{
+	else if(32 != opt->len) {
 		csa2_nok = 1;
 		delete [] opt->data;
 		delete opt;
-	}
-	else
-	{
+	} else {
 		memcpy(csac, opt->data+15, 5);
 		csac[5] = 0;
 		csa2 = atoi(csac);

@@ -32,4 +32,6 @@ pxe:		$(OBJS)
 
 install:	all
 	$(CP) pxe /usr/sbin/
-	$(CP) pxe.conf /etc/
+	@if test ! -e /etc/pxe.conf; then \
+		$(CP) pxe.conf /etc/; \
+	fi

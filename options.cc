@@ -105,10 +105,14 @@ Options::ReadFile(const char *filename)
 
 	// initalise vars
 	buf = new char[1024];
-	tftpdbase = (char*)TFTPD_BASE;
-	domain = (char*)DEF_DOMAIN;
+
+	tftpdbase = new char[strlen(TFTPD_BASE)+1];
+	strcpy(tftpdbase, TFTPD_BASE);
+	domain = new char[strlen(DEF_DOMAIN)+1];
+	strcpy(domain, DEF_DOMAIN);
+	prompt = new char[strlen(DEF_PROMPT)+1];
+	strcpy(prompt, DEF_PROMPT);
 	interface = NULL;
-	prompt = (char*)DEF_PROMPT;
 	
 	multicast_address = DEF_MULTI_BOOT;
 	mtftp_address = DEF_MTFTP_ADDR;
@@ -156,12 +160,15 @@ Options::ReadFile(const char *filename)
 		// examine key
 		if(strcmp("interface", key) == 0)
 		{
-			interface = new(char[strlen(val)+1]);
+			if (NULL != interface)
+				delete interface;
+			interface = new char[strlen(val)+1];
 			strcpy(interface, val);
 		}
 		else if(strcmp("prompt", key) == 0)
 		{
-			prompt = new(char[strlen(val)+1]);
+			delete prompt;
+			prompt = new char[strlen(val)+1];
 			strcpy(prompt, val);
 		}
 		else if(strcmp("listen_port", key) == 0)
@@ -190,12 +197,14 @@ Options::ReadFile(const char *filename)
 		}
 		else if(strcmp("domain", key) == 0)
 		{
-			domain = new(char[strlen(val)+1]);
+			delete domain;
+			domain = new char[strlen(val)+1];
 			strcpy(domain, val);
 		}
 		else if(strcmp("tftpdbase", key) == 0)
 		{
-			tftpdbase = new(char[strlen(val)+1]);
+			delete tftpdbase;
+			tftpdbase = new char[strlen(val)+1];
 			strcpy(tftpdbase, val);
 		}
 		else if(strcmp("service", key) == 0)

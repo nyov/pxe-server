@@ -98,7 +98,6 @@ int StartPxeService(const char *configfile)
 	PacketStore reply(&logger);
 	PacketStore test(&logger);
 	int retval = 0;
-	extern char *optarg;
 	int recvlen;
 	char *buf;
 	struct sockaddr_in server_addr, client_addr;

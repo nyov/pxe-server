@@ -12,7 +12,7 @@ Follow the install instructions in the bootp package.
 2) Download and install PXELINUX from here: http://syslinux.zytor.com/pxe.php
    My setup for this looks something like this:
    in /tftpboot/X86PC/linux I have the PXELINUX bootstrap (linux.0)
-   and the kernel I am going to boot from (linux.1)
+   and the kernel I am going to boot from (bzImage)
    Make a directory here called pxelinux.cfg, inside are a series of files
    which are named after the hex IP addresses of the machines. ie:
    /tftpboot/X86PC/linux/pxelinux.cfg/C0A8C8F1
@@ -31,9 +31,6 @@ label linux
 --with-setuid=user => Set the username to setuid to.
 --with-config=file => Set the location of the config file.
 --with-log=file => Set the location of the log file.
---enable-debug => Set debugging mode. The daemon will not fork into the
-                  backgroud, and will print the contents of all packets
-                  received and sent.
 
 
 4) Check config.h to make sure of things, most things should be ok,
@@ -76,6 +73,7 @@ The min and max layers are the starting and finishing layers in the boot
 protocol, most commonly these are:
 Layer 0: The bootstrap code.
 Layer 1: The kernel.
+Layer 2: The initrd.
 
 To use a ramdisk, please refer to the PXELINUX config.
 
@@ -87,15 +85,14 @@ There is one special case for all architectures, when the basename is
 "local" the layers will be ignored and a local boot performed.
 
 E.G.:
-service=X86PC,0,1,linux,Linux install
+service=X86PC,0,0,pxelinux,PXELinux
 
 This defines a service for an X86 PC, starting at layer 0 and ending at
 layer 1. The basename (filenames below) builds the filename, and
 "Linux Install" will be displayed on the boot menu.
 
 Files requested:
-/tftpboot/X86PC/linux/linux.0
-/tftpboot/X86PC/linux/linux.1
+/tftpboot/X86PC/pxelinux/pxelinux.0
 
 When more than one service is configured, the menu order is implied by the
 service description order. If no key is pressed within the prompt_timeout
@@ -106,16 +103,26 @@ your inetd.conf file (or equivalent):
 
 in /etc/bootptab, make sure every system you intend to boot via PXE has
 the line
-:T60="PXEClient":\
+	:T60="PXEClient":\
 in it (This is case sensitive). Otherwise the PXE ROM on the network card
 will not use the PXE protocol. Also make sure the bootptab has a correctly
 set tftp base directory and has no boot filename.
+
+for ISC dhcpd 3.0 users, just add
+	option vendor-class-identifier "PXEClient";
+to each class you wish to PXE boot.
 
 #########
 #tftpd
 tftp    dgram   udp     wait    root    /usr/sbin/in.tftpd      in.tftpd -s /tftpboot
 #bootp
 bootps  dgram   udp     wait    root    /usr/local/sbin/bootpd  bootpd  -i -c /tftpboot /etc/bootptab
+#########
+
+BSD users may want something like:
+#########
+tftp    dgram   udp     wait    root    /usr/libexec/tftpd      tftpd -l -s /tft
+pboot -u nobody /
 #########
 
 If you change your inetd.conf file, make sure to send inetd a HUP signal.
@@ -145,5 +152,5 @@ If you have problems with this daemon, please make sure it is repeatable,
 and send any core dumps/packet dumps to me. If you compiled the daemon
 without debugging, please don't send the core dumps.
 
-Tim Hurman. Nov 2002
+Tim Hurman. Feb 2003
 kano@kano.org.uk

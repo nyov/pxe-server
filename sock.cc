@@ -22,7 +22,7 @@
  ******************************************************************************/
 
 #include "sock.h"
-#include <iostream.h>
+#include <iostream>
 
 #ifndef _SOCKLEN_T
 typedef unsigned int socklen_t;
@@ -64,7 +64,7 @@ Sock::Sock(LogFile *_log, const char *interface, uint16_t port)
 	// if available, only bind to that
 	if (ptr != NULL)
 	{
-		cout << "Only binding to interface " << ptr->if_name << "\n";
+		std::cout << "Only binding to interface " << ptr->if_name << "\n";
 		distinct.if_name = ptr->if_name;
 		memcpy(&(distinct.if_addr), &(ptr->if_addr), sizeof(distinct.if_addr));
 		default_addr.sin_addr.s_addr = distinct.if_addr.s_addr;
@@ -74,7 +74,7 @@ Sock::Sock(LogFile *_log, const char *interface, uint16_t port)
 	else
 	// else all interfaces
 	{
-		cout << "Binding to all interfaces\n";
+		std::cout << "Binding to all interfaces\n";
 		default_addr.sin_addr.s_addr = INADDR_BROADCAST;
 		Open(start, listlen, port);
 	}
@@ -139,7 +139,7 @@ Sock::GetIfList()
 	{
 		ptr->if_name = new char[strlen(ifc.ifc_req[pos].ifr_name)+1];
 		strcpy(ptr->if_name, ifc.ifc_req[pos].ifr_name);
-		cout << "Found interface " << ifc.ifc_req[pos].ifr_name << "\n";
+		std::cout << "Found interface " << ifc.ifc_req[pos].ifr_name << "\n";
 
 		// tidy this up, too many ops
 		memcpy(&tmp_addr, &(ifc.ifc_req[pos].ifr_addr), sizeof(tmp_addr));
@@ -201,7 +201,7 @@ Sock::GetIfList()
 
 		ptr->if_name = new char[strlen(ifptr->ifa_name)+1];
 		strcpy(ptr->if_name, ifptr->ifa_name);
-		cout << "Found interface " << ifptr->ifa_name << "\n";
+		std::cout << "Found interface " << ifptr->ifa_name << "\n";
 
 		// tidy this up, too many ops
 		memcpy(&tmp_addr, ifptr->ifa_addr, sizeof(tmp_addr));
@@ -280,7 +280,8 @@ Sock::Open(iflist_t *local_addrs, int listlen, const uint16_t port)
 		bind_addrs[pos].sin_port = listenport;
 		memcpy(&(bind_addrs[pos].sin_addr), &(lptr->if_addr),
 			sizeof(bind_addrs[pos].sin_addr));
-		cout << "Binding to: " << inet_ntoa(bind_addrs[pos].sin_addr) << "\n";
+		std::cout << "Binding to: " <<
+		  inet_ntoa(bind_addrs[pos].sin_addr) << "\n";
 
 		/* create a socket */
 		sockfds[pos] = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -594,7 +595,7 @@ Sock::GetHostname(const struct sockaddr_in *address)
 	struct hostent *h_info;
 
 	// get the address info
-	h_info = gethostbyaddr((char*)&(address->sin_addr.s_addr),
+	h_info = gethostbyaddr((const char*)&(address->sin_addr.s_addr),
 	   sizeof(address->sin_addr.s_addr), AF_INET);
 	if(h_info == NULL)
 	{

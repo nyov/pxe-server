@@ -58,7 +58,7 @@ LogFile::Open(const char *filename)
 {
 	/* open the file */
 	umask(077);
-	logfile = new std::fstream(filename, std::ios::out|std::ios::app, 0644);
+	logfile = new std::fstream(filename, std::ios::out|std::ios::app);
 	if(logfile == NULL)
 	{
 		std::cerr << "Error: LogFile::Open:open(): " << strerror(errno) <<"\n";
