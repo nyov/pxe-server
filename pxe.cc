@@ -127,6 +127,9 @@ int StartPxeService(int argc, char **argv)
 	buf = new char[BUFFER_SZ];
 
 	// read the config file
+#ifdef DEBUG
+	cout << "Opening " << configfile << "\n";
+#endif // DEBUG
 	try {
 		opts = new Options(&logger, configfile);
 	} catch (SysException *e) {

@@ -8,6 +8,11 @@ LDFLAGS		=	-lsocket -lnsl -lresolv
 #CFLAGS		=	-g -ggdb -Wall -DLINUX
 #LDFLAGS		=	
 
+# uncomment the following 3 lines for OpenBSD
+#CC     =   g++
+#CFLAGS     =   -g -ggdb -Wall -DOPENBSD
+#LDFLAGS        =
+
 EXECS	=	pxe
 CP		=	cp
 

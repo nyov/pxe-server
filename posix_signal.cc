@@ -44,7 +44,7 @@ Signal::~Signal()
  * Set - set a signal register                                                *
  ******************************************************************************/
 int
-Signal::Set(int SIGNAL, __sighandler_t ACTION)
+Signal::Set(int SIGNAL, void (*ACTION) (int))
 {
 	struct sigaction act;
 

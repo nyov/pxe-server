@@ -51,7 +51,7 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 	while(ptr != NULL)
 	{
 		listlen++;
-		if(interface != NULL)
+		if(NULL != interface)
 			if(strcmp(interface, ptr->if_name) == 0)
 				break;
 		ptr = ptr->next;
@@ -60,6 +60,9 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 	// if available, only bind to that
 	if (ptr != NULL)
 	{
+#ifdef DEBUG
+		cout << "Only binding to interface " << ptr->if_name << "\n";
+#endif
 		distinct.if_name = ptr->if_name;
 		memcpy(&(distinct.if_addr), &(ptr->if_addr), sizeof(distinct.if_addr));
 		default_addr.sin_addr.s_addr = distinct.if_addr.s_addr;
@@ -69,6 +72,9 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 	else
 	// else all interfaces
 	{
+#ifdef DEBUG
+		cout << "Binding to all interfaces\n";
+#endif
 		default_addr.sin_addr.s_addr = INADDR_BROADCAST;
 		Open(start, listlen, port);
 	}
@@ -88,6 +94,7 @@ Sock::Sock(LogFile *log, const char *interface, uint16_t port)
 /******************************************************************************
  * GetIfList - get a list of all interfaces in the machine                    *
  ******************************************************************************/
+#ifndef OPENBSD
 iflist_t *
 Sock::GetIfList()
 {
@@ -132,6 +139,9 @@ Sock::GetIfList()
 	{
 		ptr->if_name = new char[strlen(ifc.ifc_req[pos].ifr_name)+1];
 		strcpy(ptr->if_name, ifc.ifc_req[pos].ifr_name);
+#ifdef DEBUG
+		cout << "Found interface " << ifc.ifc_req[pos].ifr_name << "\n";
+#endif // DEBUG
 
 		// tidy this up, too many ops
 		memcpy(&tmp_addr, &(ifc.ifc_req[pos].ifr_addr), sizeof(tmp_addr));
@@ -151,6 +161,68 @@ Sock::GetIfList()
 	delete[] ifc.ifc_req;
 	return(start);
 }
+#else
+
+#include <ifaddrs.h>
+
+iflist_t *
+Sock::GetIfList()
+{
+	struct ifaddrs *ifap, *ifptr;
+	struct sockaddr_in tmp_addr;
+	iflist_t *start, *ptr, *prevptr;
+
+	// get an interface list
+	if(-1 == getifaddrs(&ifap))
+	{
+		log->Event(LEVEL_INFO, "Sock::GetIfList", 1,
+		  "Unable to get interface list");
+		return(NULL);
+	}
+
+	// allocate the first in the linked list
+	start = ptr = prevptr = NULL;
+
+	// go through the list
+	ifptr = ifap;
+	while(1)
+	{
+		if(NULL == ifptr)
+			break;
+
+		if(AF_INET != ifptr->ifa_addr->sa_family)
+			goto get_next_addr;
+
+		ptr = new iflist_t;
+		ptr->next = NULL;
+		if(NULL == start)
+			start = prevptr = ptr;
+		else
+		{
+			prevptr->next = ptr;
+			prevptr = ptr;
+		}
+
+		ptr->if_name = new char[strlen(ifptr->ifa_name)+1];
+		strcpy(ptr->if_name, ifptr->ifa_name);
+#ifdef DEBUG
+		cout << "Found interface " << ifptr->ifa_name << "\n";
+#endif // DEBUG
+
+		// tidy this up, too many ops
+		memcpy(&tmp_addr, ifptr->ifa_addr, sizeof(tmp_addr));
+		memcpy(&(ptr->if_addr), &(tmp_addr.sin_addr), sizeof(ptr->if_addr));
+		ptr->next = NULL;
+
+		get_next_addr:
+		ifptr = ifptr->ifa_next;
+	}
+	
+	// free the interface list
+	freeifaddrs(ifap);
+	return(start);
+}
+#endif // OPENBSD
 
 
 /******************************************************************************
@@ -183,7 +255,7 @@ Sock::SetDefAddr(uint32_t addr)
 int
 Sock::Open(iflist_t *local_addrs, int listlen, const uint16_t port)
 {
-	unsigned int tmp;
+	int tmp;
 	struct servent *bootpc_port;
 	iflist_t *lptr;
 	int pos;
@@ -214,6 +286,9 @@ Sock::Open(iflist_t *local_addrs, int listlen, const uint16_t port)
 		bind_addrs[pos].sin_port = listenport;
 		memcpy(&(bind_addrs[pos].sin_addr), &(lptr->if_addr),
 			sizeof(bind_addrs[pos].sin_addr));
+#ifdef DEBUG
+		cout << "Binding to: " << inet_ntoa(bind_addrs[pos].sin_addr) << "\n";
+#endif
 
 		/* create a socket */
 		sockfds[pos] = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -223,7 +298,7 @@ Sock::Open(iflist_t *local_addrs, int listlen, const uint16_t port)
 		/* allow socket re-use */
 		tmp = 1;
 		if(setsockopt(sockfds[pos], SOL_SOCKET, SO_REUSEADDR,
-			&tmp, sizeof(tmp)) == -1)
+			(const char*)&tmp, sizeof(tmp)) == -1)
 			throw new SysException(errno, "Sock::Open:setsockopt(REUSE)");
 
 		/* bind the socket to a specific local interface */
@@ -289,8 +364,9 @@ Sock::JoinMulticast(uint32_t multi_addr)
 	/* allow socket re-use */
 	int tmp = 1;
 	if(setsockopt(multi_sockfd, SOL_SOCKET, SO_REUSEADDR,
-		&tmp, sizeof(tmp)) == -1)
-		throw new SysException(errno, "Sock::Open:setsockopt(REUSE)");
+	  (const char*)&tmp, sizeof(tmp)) == -1)
+		throw new SysException(errno,
+		  "Sock::JoinMulticast:setsockopt(REUSE)");
 
 	/* bind to the multicast address */
 	if(bind(multi_sockfd, (struct sockaddr*)&local, sizeof(local)) != 0)
@@ -302,19 +378,19 @@ Sock::JoinMulticast(uint32_t multi_addr)
 	
 	/* join a multicast group */
 	if(setsockopt(multi_sockfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-		&mreq, sizeof(mreq)) == -1)
+		(const char*)&mreq, sizeof(mreq)) == -1)
 		throw new SysException(errno, "Sock::JoinMulticast:setsockopt(ADD)");
 
 	/* Dont go outside the local net */
 	tchar = 1;
 	if(setsockopt(multi_sockfd, IPPROTO_IP, IP_MULTICAST_TTL,
-		&tchar, sizeof(tchar)) == -1)
+		(const char *)&tchar, sizeof(tchar)) == -1)
 		throw new SysException(errno, "Sock::JoinMulticast:setsockopt(TTL)");
 
 	/* Dont receive sent packets */
 	tchar = 0;
 	if(setsockopt(multi_sockfd, IPPROTO_IP, IP_MULTICAST_LOOP,
-		&tchar, sizeof(tchar)) == -1)
+		(const char *)&tchar, sizeof(tchar)) == -1)
 		throw new SysException(errno, "Sock::JoinMulticast:setsockopt(LOOP)");
 
 	log->Event(LEVEL_INFO, "Sock::JoinMulticast", 1,
@@ -340,7 +416,7 @@ Sock::LeaveMulticast()
 
 	/* leave a sock group */
 	if(setsockopt(multi_sockfd, IPPROTO_IP, IP_DROP_MEMBERSHIP,
-		&mreq, sizeof(mreq)) == -1)
+		(const char*)&mreq, sizeof(mreq)) == -1)
 		throw new SysException(errno, "Sock::LeaveMulticast:setsockopt(DROP)");
 
 	/* close */
@@ -366,7 +442,7 @@ Sock::AllowBroadcast()
 	for(pos=0; pos < ifnum; pos++)
 	{
 		if(setsockopt(sockfds[pos], SOL_SOCKET, SO_BROADCAST,
-		  &tmp, sizeof(tmp)) == -1)
+		  (const char *)&tmp, sizeof(tmp)) == -1)
 			throw new SysException(errno, "Sock::AllowBroadcast:setsockopt()");
 	}
 	log->Event(LEVEL_INFO, "Sock::AllowBroadcast", 1, "Allowing broadcasts");
@@ -387,7 +463,7 @@ Sock::DenyBroadcast()
 	for(pos=0; pos < ifnum; pos++)
 	{
 		if(setsockopt(sockfds[pos], SOL_SOCKET, SO_BROADCAST,
-		  &tmp, sizeof(tmp)) == -1)
+		  (const char *)&tmp, sizeof(tmp)) == -1)
 			throw new SysException(errno, "Sock::DenyBroadcast:setsockopt()");
 	}
 
@@ -489,7 +565,7 @@ Sock::Read(unsigned char *buf, int maxlen, struct sockaddr_in *client_addr,
 
 		// read the next packet
 		size=sizeof(struct sockaddr_in);
-		readlen = recvfrom(livefd, buf, maxlen, 0,
+		readlen = recvfrom(livefd, (char*)buf, maxlen, 0,
 			(struct sockaddr*)client_addr, (socklen_t*)&size);
 	
 		if(readlen == -1)
@@ -571,7 +647,7 @@ Sock::Send(unsigned char *buf, int maxlen, struct sockaddr_in *client_addr,
 		throw new SysException(1, "Sock::Send", "Not bound to interface");
 
 	// send the message
-	len = sendto(livefd, buf, maxlen, 0,
+	len = sendto(livefd, (char*)buf, maxlen, 0,
 	  (struct sockaddr*)client_addr, sizeof(struct sockaddr_in));
 	// ok?
 	if(-1 == len)

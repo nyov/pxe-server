@@ -179,7 +179,12 @@ Options::ReadFile(const char *filename)
 		else if(strcmp("multicast_address", key) == 0)
 		{
 			t_addr.s_addr = 0;
-			if(inet_aton(val, &t_addr) == 0)
+#ifdef SOLARIS
+			t_addr.s_addr = inet_addr(val);
+			if((unsigned)-1 == t_addr.s_addr)
+#else
+			if(0 == inet_aton(val, &t_addr))
+#endif // SOLARIS
 				t_addr.s_addr = DEF_MTFTP_ADDR;
 			multicast_address = ntohl(t_addr.s_addr);
 		}
@@ -200,7 +205,12 @@ Options::ReadFile(const char *filename)
 		else if(strcmp("mtftp_address", key) == 0)
 		{
 			t_addr.s_addr = 0;
-			if(inet_aton(val, &t_addr) == 0)
+#ifdef SOLARIS
+			t_addr.s_addr = inet_addr(val);
+			if((unsigned)-1 == t_addr.s_addr)
+#else
+			if(0 == inet_aton(val, &t_addr))
+#endif // SOLARIS
 				t_addr.s_addr = htonl(DEF_MTFTP_ADDR);
 			mtftp_address = ntohl(t_addr.s_addr);
 		}
@@ -223,7 +233,12 @@ Options::ReadFile(const char *filename)
 		else if(strcmp("default_address", key) == 0)
 		{
 			t_addr.s_addr = 0;
-			if(inet_aton(val, &t_addr) == 0)
+#ifdef SOLARIS
+			t_addr.s_addr = inet_addr(val);
+			if((unsigned)-1 == t_addr.s_addr)
+#else
+			if(0 == inet_aton(val, &t_addr))
+#endif // SOLARIS
 				t_addr.s_addr = DEF_MTFTP_ADDR;
 			default_address = ntohl(t_addr.s_addr);
 		}

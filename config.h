@@ -51,10 +51,6 @@
 #define DEF_PROMPT "Press F8 to view menu ..."
 #define DEF_PROMPT_TIMEOUT 10
 
-#ifdef SOLARIS
-#define __sighandler_t SIG_PF // solaris compatability
-#endif // __sighandler_t
-
 // this is used in lots of places, so it's going here
 struct _option
 {

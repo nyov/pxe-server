@@ -39,8 +39,11 @@
 #include <fcntl.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
-#include <stropts.h>
 #include <sys/time.h>
+
+#ifndef OPENBSD
+#include <stropts.h>
+#endif //OPENBSD
 
 #ifdef SOLARIS
 #include <sys/sockio.h>
@@ -51,6 +54,11 @@
 #include "sysexception.h"
 #include "logfile.h"
 
+#ifdef SOLARIS
+#ifndef socklen_t
+#define socklen_t int
+#endif // socklen_t
+#endif // SOLARIS
 
 struct iflist_t
 {

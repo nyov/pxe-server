@@ -47,7 +47,7 @@ class Signal
 		Signal(LogFile *log);
 		~Signal();
 
-		int Set(int SIGNAL, __sighandler_t ACTION);
+		int Set(int SIGNAL, void (*ACTION) (int));
 		int Block(int SIGNAL);
 		int UnBlock(int SIGNAL);
 
